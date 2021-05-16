@@ -5,6 +5,8 @@ const http=require('http')
 const app=exp()
 const server=http.createServer(app)
 const Filter = require('bad-words')
+const msgfun=require('./utils/messages')
+const apps=require('./utils/users')
 
 const io=socket(server)
 
@@ -17,23 +19,55 @@ app.use(exp.static(public))
 
 io.on('connection',(socket)=>{
     console.log("New web socket connection")
-    socket.emit('welcome',"welcome User")
-    socket.broadcast.emit('welcome','a new user has joined')
+    socket.on('join',({username,room},callback)=>{
+        const {error,user}=apps.adduser({id:socket.id,username,room})
+        if(error){
+            return callback(error)
+        }
+        socket.join(user.room)
+        socket.emit('welcome',msgfun.generatemsg(user.username,'Welcome'))
+        socket.broadcast.to(user.room).emit('welcome',msgfun.generatemsg('',`${user.username} has joined `))
+        io.to(user.room).emit('roomdata',{
+            room:user.room,
+            users:apps.getUsersinroom(user.room)
+        })
+        callback()
+    })
+    
+    
+    
+    
     socket.on('texted',(msg,callback)=>{
+        const user=apps.getUser(socket.id)
         const filter=new Filter()
         if(filter.isProfane(msg)){
             return callback('profanilty is not allowed')
         }
-        io.emit('welcome',msg)
+        io.to(user.room).emit('welcome',msgfun.generatemsg(user.username,msg))
         callback()
     })
     socket.on('disconnect',()=>{
-        io.emit('welcome','A user has left')
+        const user=apps.removeUser(socket.id)
+        if(user){
+        io.to(user.room).emit('welcome',msgfun.generatemsg('',`${user.username} had left the conversation`))
+        io.to(user.room).emit('roomdata',{
+            room:user.room,
+            users:apps.getUsersinroom(user.room)
+        })
+    }
     })
     socket.on('location',(loc,callback)=>{
-        io.emit('Locator','https://www.google.com/maps/?q='+loc[0]+','+loc[1]+','+'21z')
+        const user=apps.getUser(socket.id)
+        const url='https://www.google.com/maps/?q='+loc[0]+','+loc[1]+','+'21z'
+        io.to(user.room).emit('Locator',msgfun.generatemsg(user.username,url))
         callback()
     })
+
+
+
+
+
+
 })
 
 

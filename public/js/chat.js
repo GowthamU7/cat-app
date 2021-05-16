@@ -10,14 +10,16 @@ const $messeags=document.querySelector('#mg-container')
 
 const msgs=document.querySelector("#message-template").innerHTML
 const loci=document.querySelector("#location-template").innerHTML
-socket.on('welcome',(msg)=>{
-      console.log(msg)
-      const html=Mustache.render(msgs,{message:msg})
+//options
+const {username,room}= Qs.parse(location.search,{ignoreQueryPrefix:true})
+
+socket.on('welcome',(fmt)=>{
+      const html=Mustache.render(msgs,{message:fmt.msg,created:moment(fmt.createdat).format('h:mm a'),name:fmt.username})
       $messeags.insertAdjacentHTML('beforeend',html)
 })
 socket.on('Locator',(loc)=>{
     console.log("My location ",loc)
-    const html=Mustache.render(loci,{loc})
+    const html=Mustache.render(loci,{loc:loc.msg,created:moment(loc.createdat).format('h:mm a'),name:loc.username})
     $messeags.insertAdjacentHTML('beforeend',html)
 })
 $messegeform.addEventListener('submit',(e)=>{
@@ -44,8 +46,18 @@ document.querySelector("#loc").addEventListener('click',()=>{
     }
     navigator.geolocation.getCurrentPosition((position)=>{
         socket.emit('location',[position.coords.latitude,position.coords.longitude],()=>{
-            console.log('Location shared') 
         })
     })
     $locationbut.removeAttribute('disabled')
+})
+
+socket.emit('join',{username,room},(error)=>{
+    if(error){
+        alert(error)
+        location.href='/'
+    }
+})
+
+socket.on('roomdata',({room,users})=>{
+    console.log(room,users)
 })
