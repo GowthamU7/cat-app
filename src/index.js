@@ -21,12 +21,13 @@ io.on('connection',(socket)=>{
     console.log("New web socket connection")
     socket.on('join',({username,room},callback)=>{
         const {error,user}=apps.adduser({id:socket.id,username,room})
+        console.log(user)
         if(error){
             return callback(error)
         }
         socket.join(user.room)
-        socket.emit('welcome',msgfun.generatemsg(user.username,'Welcome'))
-        socket.broadcast.to(user.room).emit('welcome',msgfun.generatemsg('',`${user.username} has joined `))
+        socket.emit('welcome',msgfun.generatemsg('Adim',`Welcome to ${user.room}`,''))
+        socket.broadcast.to(user.room).emit('welcome',msgfun.generatemsg(user.username,` joined joined the Room`,user.roomj))
         io.to(user.room).emit('roomdata',{
             room:user.room,
             users:apps.getUsersinroom(user.room)
@@ -48,8 +49,9 @@ io.on('connection',(socket)=>{
     })
     socket.on('disconnect',()=>{
         const user=apps.removeUser(socket.id)
+        console.log(user)
         if(user){
-        io.to(user.room).emit('welcome',msgfun.generatemsg('',`${user.username} had left the conversation`))
+        io.to(user.room).emit('welcome',msgfun.generatemsg('',`${user.username} left the conversation`))
         io.to(user.room).emit('roomdata',{
             room:user.room,
             users:apps.getUsersinroom(user.room)

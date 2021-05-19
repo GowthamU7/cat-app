@@ -1,5 +1,5 @@
 const users=[]
-
+const Existingrooms=[]
 const adduser=({id,username,room})=>{
     username=username.trim().toLowerCase()
     room=room.trim().toLowerCase()
@@ -34,9 +34,13 @@ const getUser=(id)=>{
 }
 
 const getUsersinroom=(room)=>{
-    return users.filter((user)=>{
-        user.room===room
-    }) 
+    const usersinroom=[]
+    users.forEach((user)=>{
+            if(user.room==room){
+                usersinroom.push(user.username)
+            }
+    })
+    return usersinroom 
 }
 
 

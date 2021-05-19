@@ -1,20 +1,24 @@
 const socket=io()
 //elements
-
+var owner_username=''
 const $messegeform=document.querySelector('#form')
 const $messegefrominput=$messegeform.querySelector('#msg')
 const $messegeformbutton=$messegeform.querySelector('#but')
 const $locationbut=document.querySelector("#loc")
 const $messeags=document.querySelector('#mg-container')
+const $sdbar=document.querySelector('.chat__sidebar')
+const child=document.querySelector('#mchild')
 //template variables
-
-const msgs=document.querySelector("#message-template").innerHTML
+const msgs=document.querySelector("#message-template")
 const loci=document.querySelector("#location-template").innerHTML
+const sdbarinfo=document.querySelector("#side_bar_info").innerHTML
 //options
-const {username,room}= Qs.parse(location.search,{ignoreQueryPrefix:true})
-
+const {username,room}=Qs.parse(location.search,{ignoreQueryPrefix:true})
+owner_username=username
 socket.on('welcome',(fmt)=>{
-      const html=Mustache.render(msgs,{message:fmt.msg,created:moment(fmt.createdat).format('h:mm a'),name:fmt.username})
+    console.log(msgs.getElementsByClassName('message'))
+    console.log("username",owner_username)
+      const html=Mustache.render(msgs.innerHTML,{message:fmt.msg,created:moment(fmt.createdat).format('h:mm a'),name:fmt.username})
       $messeags.insertAdjacentHTML('beforeend',html)
 })
 socket.on('Locator',(loc)=>{
@@ -36,7 +40,12 @@ $messegeform.addEventListener('submit',(e)=>{
     })
 
 })
-
+socket.emit('join',{username,room},(error,data)=>{
+    if(error){
+        alert(error)
+        navigator.href='/'
+    }
+})
 
 
 document.querySelector("#loc").addEventListener('click',()=>{
@@ -51,13 +60,9 @@ document.querySelector("#loc").addEventListener('click',()=>{
     $locationbut.removeAttribute('disabled')
 })
 
-socket.emit('join',{username,room},(error)=>{
-    if(error){
-        alert(error)
-        location.href='/'
-    }
-})
+
 
 socket.on('roomdata',({room,users})=>{
-    console.log(room,users)
+    const html=Mustache.render(sdbarinfo,{names:users})
+    $sdbar.insertAdjacentHTML('beforeend',html)
 })

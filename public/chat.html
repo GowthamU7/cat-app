@@ -6,9 +6,13 @@
 </head>
 <body>
 <div class="chat">
-<div class="chat__sidebar"></div>
+<div class="chat__sidebar">
+<h4> Users in Room</h4>
+<p id="child"><p>
+</div>
 <div class="chat__main">
-    <div id="mg-container" class="chat__messages"></div>
+    <div id="mg-container" class="chat__messages" >
+    </div>
         <div class="compose">
         <form id="form">
             <label for="msg">TEXT</label>
@@ -25,7 +29,7 @@
     <span class="message__name">{{name}}</span>
     <span class="message__meta">{{created}}</span>
     </p>
-    <p>{{message}}</p>
+    <p id="acmsg">{{message}}</p>
     </div>
 </script>
 <script id="location-template" type="text/html">
@@ -35,6 +39,13 @@
     <span class="message__meta">{{created}}</span>
     </p>
     <a href='{{loc}}' traget='_blanck'>Check_location</a>
+    </div>
+</script>
+<script id="side_bar_info" type="text/html">
+    <div class="simessage">
+    <p>
+    <span class="users_name">{{names}}</span>
+    </p>
     </div>
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/3.0.1/mustache.min.js"></script>
